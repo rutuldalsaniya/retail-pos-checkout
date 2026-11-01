@@ -1,0 +1,23 @@
+### List articles
+GET http://localhost:8080/api/products
+
+### Open a basket
+POST http://localhost:8080/api/baskets
+
+### Scan articles (replace {id} with the basket id)
+POST http://localhost:8080/api/baskets/{id}/items
+Content-Type: application/json
+
+{ "sku": "4001", "quantity": 3 }
+
+### Pay by card
+POST http://localhost:8080/api/baskets/{id}/checkout
+Content-Type: application/json
+
+{ "paymentMethod": "CARD" }
+
+### Pay cash
+POST http://localhost:8080/api/baskets/{id}/checkout
+Content-Type: application/json
+
+{ "paymentMethod": "CASH", "cashTendered": 10.00 }
