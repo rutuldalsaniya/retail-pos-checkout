@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package pos;
+
+option java_multiple_files = true;
+option java_package = "io.github.rutuldalsaniya.pos.grpc.api";
+option java_outer_classname = "PriceLookupProto";
+
+// Price lookup used by POS terminals and scales: returns the current
+// gross price of an article by its SKU.
+service PriceLookupService {
+  rpc GetPrice (PriceRequest) returns (PriceReply);
+}
+
+message PriceRequest {
+  string sku = 1;
+}
+
+message PriceReply {
+  string sku = 1;
+  string name = 2;
+  // Gross price in EUR as a decimal string (e.g. "1.29") to avoid floating point errors.
+  string unit_price = 3;
+  // VAT rate in percent (7 or 19).
+  string vat_percent = 4;
+}
