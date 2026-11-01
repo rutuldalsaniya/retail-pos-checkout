@@ -1,0 +1,74 @@
+@startuml
+title retail-pos-checkout - class diagram (core)
+skinparam classAttributeIconSize 0
+hide empty members
+
+package domain {
+  class Basket {
+    - id : String
+    - status : BasketStatus
+    + add(product, quantity)
+    + remove(sku)
+    + lines() : List<BasketLine>
+    + markPaid()
+  }
+  class BasketLine <<record>> {
+    product : Product
+    quantity : int
+    + lineTotal() : BigDecimal
+  }
+  class Product <<record>> {
+    sku : String
+    name : String
+    unitPrice : BigDecimal
+    vatRate : VatRate
+    category : String
+  }
+  enum VatRate {
+    REDUCED (7 %)
+    STANDARD (19 %)
+  }
+  class PricedBasket <<record>>
+  class AppliedDiscount <<record>>
+  class Receipt <<record>>
+}
+
+package service {
+  interface Promotion {
+    + name() : String
+    + apply(basket) : List<AppliedDiscount>
+  }
+  class CategoryPercentagePromotion
+  class MultiBuyPromotion
+  class PricingService {
+    + price(basket) : PricedBasket
+  }
+  class BasketService
+  class CatalogService
+  class CheckoutService {
+    + checkout(basketId, method, cashTendered) : Receipt
+  }
+}
+
+package payment {
+  interface PaymentGateway {
+    + authorize(request) : PaymentResult
+  }
+  class SimulatedCardGateway
+}
+
+Basket "1" *-- "0..*" BasketLine
+BasketLine --> Product
+Product --> VatRate
+PricedBasket o-- AppliedDiscount
+Receipt --> PricedBasket
+
+Promotion <|.. CategoryPercentagePromotion
+Promotion <|.. MultiBuyPromotion
+PricingService --> "0..*" Promotion
+BasketService --> CatalogService
+CheckoutService --> BasketService
+CheckoutService --> PricingService
+CheckoutService --> PaymentGateway
+PaymentGateway <|.. SimulatedCardGateway
+@enduml

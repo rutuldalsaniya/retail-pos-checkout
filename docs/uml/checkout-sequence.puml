@@ -1,0 +1,27 @@
+@startuml
+title Card checkout - sequence diagram
+actor "POS terminal" as POS
+participant BasketController
+participant CheckoutService
+participant BasketService
+participant PricingService
+participant PaymentGateway
+
+POS -> BasketController : POST /api/baskets/{id}/checkout\n{paymentMethod: CARD}
+BasketController -> CheckoutService : checkout(id, CARD, null)
+CheckoutService -> BasketService : get(id)
+BasketService --> CheckoutService : basket (OPEN, not empty)
+CheckoutService -> PricingService : price(basket)
+PricingService --> CheckoutService : PricedBasket (total, discounts, VAT)
+CheckoutService -> PaymentGateway : authorize(amount, EUR)
+alt approved
+  PaymentGateway --> CheckoutService : approved + transactionId
+  CheckoutService -> CheckoutService : basket.markPaid()
+  CheckoutService --> BasketController : Receipt
+  BasketController --> POS : 200 OK + receipt
+else declined
+  PaymentGateway --> CheckoutService : declined
+  CheckoutService --> BasketController : PaymentDeclinedException
+  BasketController --> POS : 402 Payment Required\n(basket stays OPEN)
+end
+@enduml
